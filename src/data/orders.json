@@ -1,0 +1,173 @@
+[
+  {
+    "id": 1,
+    "userId": 2,
+    "customerName": "Balaji",
+    "customerEmail": "balakalaiyalagan1@gmail.com",
+    "customerPhone": "9566946631",
+    "customerAddress": "vhjvhj",
+    "items": [
+      {
+        "id": 1,
+        "name": "7cm Electric Sparklers",
+        "price": 12,
+        "quantity": 2,
+        "category": "Sparklers",
+        "unit": "Box"
+      },
+      {
+        "id": 25,
+        "name": "2 3/4\" Kuruvi",
+        "price": 12,
+        "quantity": 1,
+        "category": "Sound Crackers",
+        "unit": "Pkt"
+      }
+    ],
+    "totalAmount": 18,
+    "originalAmount": 36,
+    "discount": 18,
+    "status": "pending",
+    "orderDate": "2025-09-30T06:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "userId": 3,
+    "customerName": "Mahin",
+    "customerEmail": "balaji.kalaiyalagan@gmail.com",
+    "customerPhone": "7894561231",
+    "customerAddress": "fgsfdag",
+    "items": [
+      {
+        "id": 131,
+        "name": "IPL Winner",
+        "price": 6600,
+        "quantity": 1,
+        "category": "Multi Shots",
+        "unit": "Box"
+      }
+    ],
+    "totalAmount": 3300,
+    "originalAmount": 6600,
+    "discount": 3300,
+    "status": "processing",
+    "orderDate": "2025-09-30T05:45:00.000Z"
+  },
+  {
+    "id": 3,
+    "userId": 3,
+    "customerName": "Mahin",
+    "customerEmail": "balaji.kalaiyalagan@gmail.com",
+    "customerPhone": "N/A",
+    "customerAddress": "N/A",
+    "items": [
+      {
+        "id": 1,
+        "name": "7cm Electric Sparklers",
+        "price": 12,
+        "category": "Sparklers",
+        "description": "Small electric sparklers - 7cm length",
+        "unit": "Box",
+        "quantity": 1
+      },
+      {
+        "id": 2,
+        "name": "7cm Colour Sparklers",
+        "price": 20,
+        "category": "Sparklers",
+        "description": "Colorful sparklers - 7cm length",
+        "unit": "Box",
+        "quantity": 1
+      },
+      {
+        "id": 3,
+        "name": "7cm Green Sparklers",
+        "price": 26,
+        "category": "Sparklers",
+        "description": "Green sparklers - 7cm length",
+        "unit": "Box",
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 29,
+    "originalAmount": 58,
+    "discount": 29,
+    "status": "completed",
+    "orderDate": "2025-09-30T06:42:22.715Z"
+  },
+  {
+    "id": 4,
+    "userId": 3,
+    "customerName": "Mahin",
+    "customerEmail": "balaji.kalaiyalagan@gmail.com",
+    "customerPhone": "N/A",
+    "customerAddress": "N/A",
+    "items": [
+      {
+        "id": 1,
+        "name": "7cm Electric Sparklers",
+        "price": 15,
+        "category": "Sparklers",
+        "description": "Small electric sparklers - 7cm length",
+        "unit": "Box",
+        "quantity": 6
+      }
+    ],
+    "totalAmount": 45,
+    "originalAmount": 90,
+    "discount": 45,
+    "status": "pending",
+    "orderDate": "2025-09-30T06:52:38.333Z"
+  },
+  {
+    "id": 5,
+    "userId": 3,
+    "customerName": "Mahin",
+    "customerEmail": "balaji.kalaiyalagan@gmail.com",
+    "customerPhone": "N/A",
+    "customerAddress": "N/A",
+    "items": [
+      {
+        "id": 1,
+        "name": "7cm Electric Sparklers",
+        "price": 12,
+        "category": "Sparklers",
+        "description": "Small electric sparklers - 7cm length",
+        "unit": "Box",
+        "quantity": 3
+      },
+      {
+        "id": 2,
+        "name": "7cm Colour Sparklers",
+        "price": 20,
+        "category": "Sparklers",
+        "description": "Colorful sparklers - 7cm length",
+        "unit": "Box",
+        "quantity": 5
+      },
+      {
+        "id": 55,
+        "name": "1 1/2\" Twinkling Stars",
+        "price": 55,
+        "category": "Twinkling Stars",
+        "description": "Small twinkling star effects",
+        "unit": "Box",
+        "quantity": 7
+      },
+      {
+        "id": 56,
+        "name": "4\" Twinkling Stars",
+        "price": 165,
+        "category": "Twinkling Stars",
+        "description": "Large twinkling star effects",
+        "unit": "Box",
+        "quantity": 7
+      }
+    ],
+    "totalAmount": 838,
+    "originalAmount": 1676,
+    "discount": 838,
+    "status": "pending",
+    "orderDate": "2025-09-30T07:10:05.246Z"
+  }
+]

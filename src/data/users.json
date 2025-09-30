@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Admin",
+    "email": "admin@mahin.com",
+    "phone": "9566946632",
+    "password": "admin123",
+    "role": "admin",
+    "address": "4/2007, 56 House Colony, Pallapatti, Sivakasi - 626 189",
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Balaji",
+    "email": "balakalaiyalagan1@gmail.com",
+    "phone": "9566946631",
+    "password": "$2b$10$N9qo8uLOickgx2ZMRZoMye.fDkkXinP.2u.1kWeyy0jAlzjSxuLDa",
+    "address": "vhjvhj",
+    "role": "customer",
+    "createdAt": "2025-09-30T05:56:25.077Z"
+  },
+  {
+    "id": 3,
+    "name": "Mahin",
+    "email": "balaji.kalaiyalagan@gmail.com",
+    "phone": "7894561231",
+    "password": "$2b$10$nGkEzpQLVpHOgKAdV1rRDOlhctxtStDvMvi9Lt3r1z7lfpotr8oYW",
+    "address": "fgsfdag",
+    "role": "customer",
+    "createdAt": "2025-09-30T06:19:24.673Z"
+  }
+]
