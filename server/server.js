@@ -258,7 +258,8 @@ app.post('/api/hash-password', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 SQLite Server running on http://localhost:${PORT}`);
+const port = process.env.PORT || PORT;
+app.listen(port, () => {
+  console.log(`🚀 SQLite Server running on port ${port}`);
   console.log(`📊 Database: server/crackers.db`);
 });
