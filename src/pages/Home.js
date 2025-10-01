@@ -186,11 +186,11 @@ function Home() {
         </div>
         
         <div className="cracker-carousel">
-          <div className="cracker-track" style={{ transform: `translateX(-${currentCrackerIndex * (100 / 3)}%)` }}>
+          <div className="cracker-track">
             {crackerImages.map((cracker, index) => (
               <div 
                 key={index}
-                className="cracker-card"
+                className={`cracker-card ${index === currentCrackerIndex ? 'active' : ''}`}
                 style={{ background: cracker.bg }}
               >
                 <div className="cracker-icon">{cracker.emoji}</div>
@@ -203,23 +203,8 @@ function Home() {
             ))}
           </div>
           
-          <div className="carousel-controls">
-            <button 
-              className="carousel-btn prev" 
-              onClick={() => setCurrentCrackerIndex(prev => prev > 0 ? prev - 1 : crackerImages.length - 3)}
-            >
-              ‹
-            </button>
-            <button 
-              className="carousel-btn next" 
-              onClick={() => setCurrentCrackerIndex(prev => prev < crackerImages.length - 3 ? prev + 1 : 0)}
-            >
-              ›
-            </button>
-          </div>
-          
           <div className="carousel-indicators">
-            {Array.from({ length: crackerImages.length - 2 }).map((_, index) => (
+            {crackerImages.map((_, index) => (
               <button
                 key={index}
                 className={`indicator ${index === currentCrackerIndex ? 'active' : ''}`}
