@@ -15,7 +15,7 @@ function MyOrders() {
 
   const fetchMyOrders = async () => {
     try {
-      const response = await fetch(`http://localhost:3002/api/orders/user/${user.id}`);
+      const response = await fetch(`/api/orders/user/${user.id}`);
       const data = await response.json();
       setOrders(data);
       setLoading(false);

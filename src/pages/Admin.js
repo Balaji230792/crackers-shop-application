@@ -25,7 +25,7 @@ function Admin() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/products');
+      const response = await fetch('/api/products');
       const data = await response.json();
       setProducts(data);
       setServerAvailable(true);
@@ -46,7 +46,7 @@ function Admin() {
   const handleSave = async () => {
     if (serverAvailable) {
       try {
-        const response = await fetch(`http://localhost:3002/api/products/${editingProduct}`, {
+        const response = await fetch(`/api/products/${editingProduct}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ function Admin() {
     try {
       console.log('Deleting product ID:', productId);
       
-      const response = await fetch(`http://localhost:3002/api/products/${productId}`, {
+      const response = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ function Admin() {
 
       console.log('Sending product data:', productData);
 
-      const response = await fetch('http://localhost:3002/api/products', {
+      const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

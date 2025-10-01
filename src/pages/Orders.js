@@ -11,7 +11,7 @@ function Orders() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/orders');
+      const response = await fetch('/api/orders');
       const data = await response.json();
       setOrders(data);
       setServerAvailable(true);
@@ -29,7 +29,7 @@ function Orders() {
   const updateOrderStatus = async (orderId, newStatus) => {
     if (serverAvailable) {
       try {
-        const response = await fetch(`http://localhost:3002/api/orders/${orderId}`, {
+        const response = await fetch(`/api/orders/${orderId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
