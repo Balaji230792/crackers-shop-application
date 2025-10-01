@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const path = require('path');
 const db = require('./database');
 
 const app = express();
@@ -8,6 +9,9 @@ const PORT = 3002;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, '../build')));
 
 // Get all products
 app.get('/api/products', (req, res) => {
@@ -258,8 +262,14 @@ app.post('/api/hash-password', async (req, res) => {
   }
 });
 
+// Serve React app for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../build', 'index.html'));
+});
+
 const port = process.env.PORT || PORT;
 app.listen(port, () => {
   console.log(`🚀 SQLite Server running on port ${port}`);
   console.log(`📊 Database: server/crackers.db`);
+  console.log(`🌐 Serving React app from build folder`);
 });
