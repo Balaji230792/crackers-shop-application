@@ -8,32 +8,36 @@ const db = require('./database');
 const app = express();
 const PORT = 3002;
 
-// Auto-populate database on startup
+// Auto-populate database on startup (only if empty)
 const initializeDatabase = async () => {
   try {
-    // Clear all users and recreate admin
-    db.run('DELETE FROM users', (err) => {
-      if (err) console.log('Users table clear error (expected on first run):', err.message);
-      
-      // Create fresh admin user with new hash
-      bcrypt.hash('admin123', 10, (err, hash) => {
-        if (err) {
-          console.error('Error hashing password:', err);
-          return;
-        }
+    // Check if admin user exists
+    db.get('SELECT COUNT(*) as count FROM users WHERE email = ?', ['admin@mahin.com'], (err, result) => {
+      if (err || result.count === 0) {
+        console.log('🔄 Creating admin user...');
         
-        db.run(
-          'INSERT INTO users (name, email, phone, password, address, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          ['Admin User', 'admin@mahin.com', '9876543210', hash, 'Admin Address', 'admin', new Date().toISOString()],
-          function(err) {
-            if (err) {
-              console.error('Error creating admin user:', err);
-            } else {
-              console.log('✅ Admin user created with ID:', this.lastID);
-            }
+        // Create admin user only if doesn't exist
+        bcrypt.hash('admin123', 10, (err, hash) => {
+          if (err) {
+            console.error('Error hashing password:', err);
+            return;
           }
-        );
-      });
+          
+          db.run(
+            'INSERT INTO users (name, email, phone, password, address, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            ['Admin User', 'admin@mahin.com', '9876543210', hash, 'Admin Address', 'admin', new Date().toISOString()],
+            function(err) {
+              if (err) {
+                console.error('Error creating admin user:', err);
+              } else {
+                console.log('✅ Admin user created with ID:', this.lastID);
+              }
+            }
+          );
+        });
+      } else {
+        console.log('✅ Admin user already exists');
+      }
     });
     
     // Check and populate products if needed
