@@ -25,6 +25,7 @@ function Header() {
         <nav className="main-nav">
           <Link to="/">Home</Link>
           <Link to="/products">Products</Link>
+          <Link to="/contact">Contact</Link>
           {user && user.role === 'customer' && (
             <>
               <Link to="/my-orders">My Orders</Link>

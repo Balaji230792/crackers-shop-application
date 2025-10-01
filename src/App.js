@@ -12,7 +12,9 @@ import Signup from './pages/Signup';
 import Admin from './pages/Admin';
 import Orders from './pages/Orders';
 import MyOrders from './pages/MyOrders';
+import Contact from './pages/Contact';
 import './styles/App.css';
+import './styles/countdown.css';
 
 function App() {
   return (
@@ -31,6 +33,7 @@ function App() {
               <Route path="/admin" element={<Admin />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/my-orders" element={<MyOrders />} />
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </div>
           </Router>

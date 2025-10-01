@@ -39,10 +39,8 @@ function Login() {
           required
         />
         <button type="submit">Login</button>
-        <div className="demo-credentials">
-          <p><strong>Demo Credentials:</strong></p>
-          <p>Admin: admin@mahin.com / admin123</p>
-          <p>Or <Link to="/signup">create a new account</Link></p>
+        <div className="signup-link">
+          <p>Don't have an account? <Link to="/signup">Sign up here</Link></p>
         </div>
       </form>
     </div>
