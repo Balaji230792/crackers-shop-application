@@ -10,123 +10,108 @@ function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Create WhatsApp message
     const message = `Hi! I'm ${formData.name}%0AEmail: ${formData.email}%0APhone: ${formData.phone}%0AMessage: ${formData.message}`;
     const whatsappUrl = `https://wa.me/919566946632?text=${message}`;
     window.open(whatsappUrl, '_blank');
-    
-    // Reset form
     setFormData({ name: '', email: '', phone: '', message: '' });
-    alert('Redirecting to WhatsApp...');
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
-    <div className="contact-container">
-      <div className="contact-header">
-        <h2>Contact Us</h2>
-        <p>Get in touch with Mahin Crackers for all your Diwali needs!</p>
+    <div className="contact-page">
+      <div className="contact-hero">
+        <div className="hero-particles"></div>
+        <h1>Get in Touch</h1>
+        <p>We're here to make your Diwali celebrations spectacular</p>
       </div>
 
-      <div className="contact-content">
-        <div className="contact-info">
-          <h3>📍 Store Information</h3>
-          <div className="info-item">
-            <strong>📍 Address:</strong>
-            <p>Mahin Crackers<br/>Sivakasi, Tamil Nadu</p>
+      <div className="contact-grid">
+        <div className="contact-card info-card">
+          <div className="card-header">
+            <h3>📍 Visit Our Store</h3>
           </div>
-          
-          <div className="info-item">
-            <strong>📞 Phone:</strong>
-            <p>+91 9566946632</p>
+          <div className="contact-details">
+            <div className="detail-item">
+              <span className="icon">📍</span>
+              <div>
+                <strong>Address</strong>
+                <p>Sivakasi, Tamil Nadu</p>
+              </div>
+            </div>
+            <div className="detail-item">
+              <span className="icon">📞</span>
+              <div>
+                <strong>Phone</strong>
+                <p>+91 9566946632</p>
+              </div>
+            </div>
+            <div className="detail-item">
+              <span className="icon">🕒</span>
+              <div>
+                <strong>Hours</strong>
+                <p>9:00 AM - 9:00 PM</p>
+              </div>
+            </div>
           </div>
-          
-          <div className="info-item">
-            <strong>📧 Email:</strong>
-            <p>admin@mahin.com</p>
-          </div>
-          
-          <div className="info-item">
-            <strong>🕒 Business Hours:</strong>
-            <p>Monday - Sunday: 9:00 AM - 9:00 PM</p>
-          </div>
-
-          <div className="whatsapp-direct">
-            <h4>💬 Quick Contact</h4>
-            <a href="https://wa.me/919566946632" target="_blank" rel="noopener noreferrer" className="whatsapp-btn-large">
-              <span className="whatsapp-icon">📱</span>
-              <span>Chat on WhatsApp</span>
-            </a>
-          </div>
+          <a href="https://wa.me/919566946632" className="whatsapp-cta">
+            <span>💬</span> Chat on WhatsApp
+          </a>
         </div>
 
-        <div className="contact-form">
-          <h3>📝 Send us a Message</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <input
-                type="text"
-                name="name"
-                placeholder="Your Name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <input
-                type="email"
-                name="email"
-                placeholder="Your Email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Your Phone Number"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <textarea
-                name="message"
-                placeholder="Your Message"
-                rows="5"
-                value={formData.message}
-                onChange={handleChange}
-                required
-              ></textarea>
-            </div>
-            
-            <button type="submit" className="submit-btn">
+        <div className="contact-card form-card">
+          <div className="card-header">
+            <h3>📝 Send Message</h3>
+          </div>
+          <form onSubmit={handleSubmit} className="elegant-form">
+            <input
+              type="text"
+              name="name"
+              placeholder="Your Name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Your Email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Your Phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+            />
+            <textarea
+              name="message"
+              placeholder="Your Message"
+              rows="4"
+              value={formData.message}
+              onChange={handleChange}
+              required
+            ></textarea>
+            <button type="submit">
               Send via WhatsApp 📱
             </button>
           </form>
         </div>
       </div>
 
-      <div className="safety-info">
-        <h3>🛡️ Safety Guidelines</h3>
-        <div className="safety-tips">
-          <p>• Always supervise children when using crackers</p>
-          <p>• Keep water/sand nearby while bursting crackers</p>
-          <p>• Follow local guidelines and timings</p>
-          <p>• Store crackers in cool, dry places</p>
+      <div className="safety-section">
+        <h3>🛡️ Safety First</h3>
+        <div className="safety-grid">
+          <div className="safety-tip">👶 Supervise children</div>
+          <div className="safety-tip">💧 Keep water nearby</div>
+          <div className="safety-tip">📋 Follow guidelines</div>
+          <div className="safety-tip">🏠 Store safely</div>
         </div>
       </div>
     </div>
