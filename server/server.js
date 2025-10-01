@@ -8,40 +8,57 @@ const db = require('./database');
 const app = express();
 const PORT = 3002;
 
-// Auto-populate database on startup if empty
-const initializeDatabase = () => {
-  db.get('SELECT COUNT(*) as count FROM products', (err, result) => {
-    if (err || result.count === 0) {
-      console.log('🔄 Database empty, populating with initial data...');
+// Auto-populate database on startup
+const initializeDatabase = async () => {
+  try {
+    // Clear all users and recreate admin
+    db.run('DELETE FROM users', (err) => {
+      if (err) console.log('Users table clear error (expected on first run):', err.message);
       
-      // Load and insert products
-      const productsData = JSON.parse(fs.readFileSync(path.join(__dirname, '../src/data/products.json'), 'utf8'));
-      const stmt = db.prepare('INSERT INTO products (id, name, price, category, description, unit) VALUES (?, ?, ?, ?, ?, ?)');
-      
-      productsData.forEach(product => {
-        stmt.run([product.id, product.name, product.price, product.category, product.description, product.unit]);
+      // Create fresh admin user with new hash
+      bcrypt.hash('admin123', 10, (err, hash) => {
+        if (err) {
+          console.error('Error hashing password:', err);
+          return;
+        }
+        
+        db.run(
+          'INSERT INTO users (name, email, phone, password, address, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          ['Admin User', 'admin@mahin.com', '9876543210', hash, 'Admin Address', 'admin', new Date().toISOString()],
+          function(err) {
+            if (err) {
+              console.error('Error creating admin user:', err);
+            } else {
+              console.log('✅ Admin user created with ID:', this.lastID);
+            }
+          }
+        );
       });
-      stmt.finalize();
-      
-      // Insert admin user
-      const adminHash = '$2b$10$8K1p/a0dclxKcvd6nL8LKuUd/wvJ4uiM4RfqC5/Cp2jzpOtqb5vWS'; // admin123
-      db.run(
-        'INSERT OR IGNORE INTO users (id, name, email, phone, password, address, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [1, 'Admin User', 'admin@mahin.com', '9876543210', adminHash, 'Admin Address', 'admin', new Date().toISOString()]
-      );
-      
-      // Insert test customer
-      const customerHash = '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'; // password
-      db.run(
-        'INSERT OR IGNORE INTO users (id, name, email, phone, password, address, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [2, 'Test Customer', 'customer@test.com', '9876543211', customerHash, 'Customer Address', 'customer', new Date().toISOString()]
-      );
-      
-      console.log('✅ Database populated with products and users');
-    } else {
-      console.log('✅ Database already contains data');
-    }
-  });
+    });
+    
+    // Check and populate products if needed
+    db.get('SELECT COUNT(*) as count FROM products', (err, result) => {
+      if (err || result.count === 0) {
+        console.log('🔄 Populating products...');
+        
+        // Load and insert products
+        const productsData = JSON.parse(fs.readFileSync(path.join(__dirname, '../src/data/products.json'), 'utf8'));
+        const stmt = db.prepare('INSERT OR REPLACE INTO products (id, name, price, category, description, unit) VALUES (?, ?, ?, ?, ?, ?)');
+        
+        productsData.forEach(product => {
+          stmt.run([product.id, product.name, product.price, product.category, product.description, product.unit]);
+        });
+        stmt.finalize();
+        
+        console.log('✅ Products populated');
+      } else {
+        console.log('✅ Products already exist');
+      }
+    });
+    
+  } catch (error) {
+    console.error('Database initialization error:', error);
+  }
 };
 
 // Initialize database after a short delay
@@ -312,6 +329,5 @@ app.listen(port, () => {
   console.log(`🚀 SQLite Server running on port ${port}`);
   console.log(`📊 Database: server/crackers.db`);
   console.log(`🌐 Serving React app from build folder`);
-  console.log(`👤 Admin: admin@mahin.com / admin123`);
-  console.log(`👤 Customer: customer@test.com / password`);
+  console.log(`👤 Admin Login: admin@mahin.com / admin123`);
 });
