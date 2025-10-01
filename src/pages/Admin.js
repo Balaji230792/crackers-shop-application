@@ -7,6 +7,17 @@ function Admin() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
   const [serverAvailable, setServerAvailable] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    price: '',
+    category: '',
+    description: '',
+    unit: ''
+  });
+
+  const categories = ['Sparklers', 'Sound Crackers', 'Bijili Crackers', 'Ground Chakkar', 'Twinkling Stars', 'Flower Pots', 'Pencils', 'Rockets', 'Bombs', 'Fountains', 'Fancy Items', 'Multi Shots', 'Miscellaneous', 'Matches', 'Gift Sets'];
+  const units = ['Box', 'Pkt', 'Bag', 'Dozen'];
 
   useEffect(() => {
     fetchProducts();
@@ -70,17 +81,177 @@ function Admin() {
     setFormData({});
   };
 
+  const handleDelete = async (productId) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) {
+      return;
+    }
+
+    if (!serverAvailable) {
+      alert('Server not available - Cannot delete products');
+      return;
+    }
+
+    try {
+      console.log('Deleting product ID:', productId);
+      
+      const response = await fetch(`http://localhost:3002/api/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      const result = await response.json();
+      console.log('Delete response:', result);
+      
+      if (response.ok) {
+        await fetchProducts();
+        alert('Product deleted successfully!');
+      } else {
+        alert(`Failed to delete product: ${result.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert(`Error deleting product: ${error.message}`);
+    }
+  };
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    
+    if (!serverAvailable) {
+      alert('Server not available - Cannot add products');
+      return;
+    }
+
+    // Validate required fields
+    if (!newProduct.name.trim() || !newProduct.price || !newProduct.category || !newProduct.unit) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const productData = {
+        name: newProduct.name.trim(),
+        price: Number(newProduct.price),
+        category: newProduct.category,
+        description: newProduct.description.trim() || '',
+        unit: newProduct.unit
+      };
+
+      // Validate price is a valid number
+      if (isNaN(productData.price) || productData.price <= 0) {
+        alert('Please enter a valid price');
+        return;
+      }
+
+      console.log('Sending product data:', productData);
+
+      const response = await fetch('http://localhost:3002/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData)
+      });
+      
+      const result = await response.json();
+      console.log('Server response:', result);
+      
+      if (response.ok) {
+        await fetchProducts();
+        setNewProduct({ name: '', price: '', category: '', description: '', unit: '' });
+        setShowAddForm(false);
+        alert('Product added successfully!');
+      } else {
+        alert(`Failed to add product: ${result.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error adding product:', error);
+      alert(`Error adding product: ${error.message}`);
+    }
+  };
+
   if (loading) {
     return <div className="admin-container"><h2>Loading...</h2></div>;
   }
 
   return (
     <div className="admin-container">
-      <h2>Admin Panel - Product Management</h2>
+      <div className="admin-header">
+        <h2>Admin Panel - Product Management</h2>
+        <button 
+          className="add-product-btn"
+          onClick={() => setShowAddForm(!showAddForm)}
+          disabled={!serverAvailable}
+        >
+          {showAddForm ? 'Cancel' : 'Add Product'}
+        </button>
+      </div>
       {serverAvailable ? (
         <p className="server-note">✅ Server connected - Changes will be saved to JSON file</p>
       ) : (
         <p className="server-warning">⚠️ Server not available - Changes are local only. Start server with: cd server && npm start</p>
+      )}
+      
+      {showAddForm && (
+        <form className="add-product-form" onSubmit={handleAddProduct}>
+          <h3>Add New Product</h3>
+          <div className="form-grid">
+            <div className="form-field">
+              <input
+                type="text"
+                placeholder="Product Name"
+                value={newProduct.name}
+                onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-field">
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="Price"
+                value={newProduct.price}
+                onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-field">
+              <select
+                value={newProduct.category}
+                onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                required
+              >
+                <option value="">Select Category</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-field">
+              <select
+                value={newProduct.unit}
+                onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})}
+                required
+              >
+                <option value="">Select Unit</option>
+                {units.map(unit => (
+                  <option key={unit} value={unit}>{unit}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-field full-width">
+              <textarea
+                placeholder="Description (optional)"
+                value={newProduct.description}
+                onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+              />
+            </div>
+          </div>
+          <button type="submit" className="submit-btn">Add Product</button>
+        </form>
       )}
       <div className="products-table">
         <table>
@@ -131,7 +302,10 @@ function Admin() {
                       <button onClick={handleCancel} className="cancel-btn">Cancel</button>
                     </div>
                   ) : (
-                    <button onClick={() => handleEdit(product)} className="edit-btn">Edit</button>
+                    <div>
+                      <button onClick={() => handleEdit(product)} className="edit-btn">Edit</button>
+                      <button onClick={() => handleDelete(product.id)} className="delete-btn">Delete</button>
+                    </div>
                   )}
                 </td>
               </tr>

@@ -107,7 +107,19 @@ function Products() {
       </aside>
       
       <main className="products-main">
-        <h2>Our Products</h2>
+        <div className="products-header">
+          <h2>Our Products</h2>
+          <button 
+            className="minimize-all-btn"
+            onClick={() => {
+              const categories = Object.keys(groupedProducts);
+              const allCollapsed = categories.every(cat => collapsedCategories[cat]);
+              setCollapsedCategories(allCollapsed ? {} : categories.reduce((acc, cat) => ({ ...acc, [cat]: true }), {}));
+            }}
+          >
+            {Object.keys(groupedProducts).every(cat => collapsedCategories[cat]) ? 'Expand All' : 'Minimize All'}
+          </button>
+        </div>
         <div className="search-container">
           <input
             type="text"

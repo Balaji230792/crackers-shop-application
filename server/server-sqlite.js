@@ -9,7 +9,7 @@ const PORT = 3002;
 app.use(cors());
 app.use(express.json());
 
-// Get all products
+// Products endpoints
 app.get('/api/products', (req, res) => {
   db.all('SELECT * FROM products ORDER BY category, name', (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -17,7 +17,6 @@ app.get('/api/products', (req, res) => {
   });
 });
 
-// Create a new product
 app.post('/api/products', (req, res) => {
   const { name, price, category, description, unit } = req.body;
   
@@ -35,7 +34,6 @@ app.post('/api/products', (req, res) => {
   );
 });
 
-// Update a product
 app.put('/api/products/:id', (req, res) => {
   const { name, price, category, description, unit } = req.body;
   db.run(
@@ -48,32 +46,7 @@ app.put('/api/products/:id', (req, res) => {
   );
 });
 
-// Delete a product
-app.delete('/api/products/:id', (req, res) => {
-  const productId = req.params.id;
-  console.log('Attempting to delete product ID:', productId);
-  
-  db.run(
-    'DELETE FROM products WHERE id = ?',
-    [productId],
-    function(err) {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: err.message });
-      }
-      
-      console.log('Delete operation completed. Changes:', this.changes);
-      
-      if (this.changes === 0) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-      
-      res.json({ message: 'Product deleted successfully' });
-    }
-  );
-});
-
-// User signup
+// User endpoints
 app.post('/api/signup', async (req, res) => {
   try {
     const { name, email, phone, password, address } = req.body;
@@ -97,7 +70,6 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
-// User login
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
   
@@ -105,6 +77,7 @@ app.post('/api/login', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     
+    // Handle both hashed and plain passwords for migration
     let isValid = false;
     if (user.password.startsWith('$2b$')) {
       isValid = await bcrypt.compare(password, user.password);
@@ -121,7 +94,7 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Get all orders
+// Orders endpoints
 app.get('/api/orders', (req, res) => {
   const query = `
     SELECT o.id, o.user_id as userId, o.total_amount as totalAmount, 
@@ -136,6 +109,7 @@ app.get('/api/orders', (req, res) => {
   db.all(query, (err, orders) => {
     if (err) return res.status(500).json({ error: err.message });
     
+    // Get items for each order
     const promises = orders.map(order => {
       return new Promise((resolve) => {
         db.all(
@@ -159,7 +133,6 @@ app.get('/api/orders', (req, res) => {
   });
 });
 
-// Get orders by user ID
 app.get('/api/orders/user/:userId', (req, res) => {
   const userId = req.params.userId;
   
@@ -175,6 +148,7 @@ app.get('/api/orders/user/:userId', (req, res) => {
   db.all(query, [userId], (err, orders) => {
     if (err) return res.status(500).json({ error: err.message });
     
+    // Get items for each order
     const promises = orders.map(order => {
       return new Promise((resolve) => {
         db.all(
@@ -198,7 +172,6 @@ app.get('/api/orders/user/:userId', (req, res) => {
   });
 });
 
-// Update order status
 app.put('/api/orders/:id', (req, res) => {
   const { status } = req.body;
   db.run(
@@ -211,7 +184,6 @@ app.put('/api/orders/:id', (req, res) => {
   );
 });
 
-// Create new order
 app.post('/api/orders', (req, res) => {
   const { userId, items, totalAmount, originalAmount, discount } = req.body;
   
@@ -245,17 +217,6 @@ app.post('/api/orders', (req, res) => {
       }
     );
   });
-});
-
-// Helper endpoint to generate password hash (for development only)
-app.post('/api/hash-password', async (req, res) => {
-  try {
-    const { password } = req.body;
-    const hash = await bcrypt.hash(password, 10);
-    res.json({ password, hash });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to hash password' });
-  }
 });
 
 app.listen(PORT, () => {
