@@ -44,11 +44,16 @@ function Products() {
   const fetchProducts = async () => {
     try {
       const response = await fetch('/api/products');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setProducts(data);
       setLoading(false);
+      console.log('✅ Connected to server successfully');
     } catch (error) {
-      console.error('Server not available, using local data:', error);
+      console.error('❌ Server connection failed:', error.message);
+      console.log('📋 Using local product data as fallback');
       setProducts(productsData);
       setLoading(false);
     }

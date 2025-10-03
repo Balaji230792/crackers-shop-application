@@ -56,11 +56,21 @@ db.serialize(() => {
     FOREIGN KEY (product_id) REFERENCES products (id)
   )`);
 
+  // Sessions table
+  db.run(`CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+  )`);
+
   // Create indexes
   db.run('CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_orders_date ON orders(order_date)');
   db.run('CREATE INDEX IF NOT EXISTS idx_products_category ON products(category)');
   db.run('CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)');
 });
 
 module.exports = db;

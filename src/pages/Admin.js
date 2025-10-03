@@ -25,7 +25,17 @@ function Admin() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products');
+      const sessionId = localStorage.getItem('crackerShopSession');
+      const response = await fetch('/api/products', {
+        headers: sessionId ? { 'x-session-id': sessionId } : {}
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('crackerShopSession');
+        window.location.href = '/login';
+        return;
+      }
+      
       const data = await response.json();
       setProducts(data);
       setServerAvailable(true);
@@ -46,20 +56,39 @@ function Admin() {
   const handleSave = async () => {
     if (serverAvailable) {
       try {
+        const sessionId = localStorage.getItem('crackerShopSession');
+        
+        // Handle offline mode
+        if (sessionId === 'offline-admin-session') {
+          const updatedProducts = products.map(p => p.id === editingProduct ? formData : p);
+          setProducts(updatedProducts);
+          setEditingProduct(null);
+          setFormData({});
+          alert('Product updated locally (offline mode)');
+          return;
+        }
+        
         const response = await fetch(`/api/products/${editingProduct}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'x-session-id': sessionId
           },
           body: JSON.stringify(formData),
         });
+        
+        if (response.status === 401) {
+          localStorage.removeItem('crackerShopSession');
+          window.location.href = '/login';
+          return;
+        }
         
         if (response.ok) {
           const updatedProducts = products.map(p => p.id === editingProduct ? formData : p);
           setProducts(updatedProducts);
           setEditingProduct(null);
           setFormData({});
-          alert('Product updated successfully in JSON file!');
+          alert('Product updated successfully!');
         } else {
           alert('Failed to update product');
         }
@@ -94,12 +123,20 @@ function Admin() {
     try {
       console.log('Deleting product ID:', productId);
       
+      const sessionId = localStorage.getItem('crackerShopSession');
       const response = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'x-session-id': sessionId
         }
       });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('crackerShopSession');
+        window.location.href = '/login';
+        return;
+      }
       
       const result = await response.json();
       console.log('Delete response:', result);
@@ -147,13 +184,33 @@ function Admin() {
 
       console.log('Sending product data:', productData);
 
+      const sessionId = localStorage.getItem('crackerShopSession');
+      
+      // Handle offline mode
+      if (sessionId === 'offline-admin-session') {
+        const newId = Math.max(...products.map(p => p.id)) + 1;
+        const newProductWithId = { ...productData, id: newId };
+        setProducts([...products, newProductWithId]);
+        setNewProduct({ name: '', price: '', category: '', description: '', unit: '' });
+        setShowAddForm(false);
+        alert('Product added locally (offline mode)');
+        return;
+      }
+      
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-session-id': sessionId
         },
         body: JSON.stringify(productData)
       });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('crackerShopSession');
+        window.location.href = '/login';
+        return;
+      }
       
       const result = await response.json();
       console.log('Server response:', result);

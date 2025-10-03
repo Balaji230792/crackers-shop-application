@@ -1,10 +1,95 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const db = require('./database');
 
 const app = express();
 const PORT = 3002;
+
+// Session utilities
+const generateSessionId = () => crypto.randomBytes(32).toString('hex');
+const SESSION_DURATION = 15 * 60 * 1000; // 15 minutes
+
+const createSession = (userId) => {
+  return new Promise((resolve, reject) => {
+    const sessionId = generateSessionId();
+    const expiresAt = new Date(Date.now() + SESSION_DURATION).toISOString();
+    
+    db.run(
+      'INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)',
+      [sessionId, userId, expiresAt],
+      function(err) {
+        if (err) reject(err);
+        else resolve(sessionId);
+      }
+    );
+  });
+};
+
+const validateSession = (sessionId) => {
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT s.*, u.id as user_id, u.name, u.email, u.role 
+       FROM sessions s 
+       JOIN users u ON s.user_id = u.id 
+       WHERE s.id = ? AND s.expires_at > datetime('now')`,
+      [sessionId],
+      (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      }
+    );
+  });
+};
+
+const expireSession = (sessionId) => {
+  return new Promise((resolve, reject) => {
+    db.run('DELETE FROM sessions WHERE id = ?', [sessionId], function(err) {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+};
+
+const cleanExpiredSessions = () => {
+  db.run('DELETE FROM sessions WHERE expires_at <= datetime(\'now\')');
+};
+
+// Clean expired sessions every 5 minutes
+setInterval(cleanExpiredSessions, 5 * 60 * 1000);
+
+// Session validation middleware
+const requireAuth = async (req, res, next) => {
+  const sessionId = req.headers['x-session-id'];
+  
+  if (!sessionId) {
+    return res.status(401).json({ error: 'Session required' });
+  }
+  
+  try {
+    const session = await validateSession(sessionId);
+    if (!session) {
+      return res.status(401).json({ error: 'Invalid or expired session' });
+    }
+    
+    req.user = { id: session.user_id, name: session.name, email: session.email, role: session.role };
+    next();
+  } catch (error) {
+    res.status(500).json({ error: 'Session validation failed' });
+  }
+};
+
+const requireAdmin = (req, res, next) => {
+  requireAuth(req, res, () => {
+    if (req.user && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    if (req.user) {
+      next();
+    }
+  });
+};
 
 app.use(cors());
 app.use(express.json());
@@ -17,7 +102,7 @@ app.get('/api/products', (req, res) => {
   });
 });
 
-app.post('/api/products', (req, res) => {
+app.post('/api/products', requireAdmin, (req, res) => {
   const { name, price, category, description, unit } = req.body;
   
   if (!name || !price || !category || !unit) {
@@ -34,7 +119,7 @@ app.post('/api/products', (req, res) => {
   );
 });
 
-app.put('/api/products/:id', (req, res) => {
+app.put('/api/products/:id', requireAdmin, (req, res) => {
   const { name, price, category, description, unit } = req.body;
   db.run(
     'UPDATE products SET name = ?, price = ?, category = ?, description = ?, unit = ? WHERE id = ?',
@@ -42,6 +127,26 @@ app.put('/api/products/:id', (req, res) => {
     function(err) {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ message: 'Product updated successfully' });
+    }
+  );
+});
+
+app.delete('/api/products/:id', requireAdmin, (req, res) => {
+  const productId = req.params.id;
+  
+  db.run(
+    'DELETE FROM products WHERE id = ?',
+    [productId],
+    function(err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      
+      res.json({ message: 'Product deleted successfully' });
     }
   );
 });
@@ -70,14 +175,20 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   
-  db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const user = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     
-    // Handle both hashed and plain passwords for migration
+    // Handle both hashed and plain passwords
     let isValid = false;
     if (user.password.startsWith('$2b$')) {
       isValid = await bcrypt.compare(password, user.password);
@@ -87,15 +198,54 @@ app.post('/api/login', (req, res) => {
     
     if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
     
+    // Create session
+    const sessionId = await createSession(user.id);
+    
     res.json({
       message: 'Login successful',
+      sessionId,
       user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Validate session
+app.post('/api/validate-session', async (req, res) => {
+  const { sessionId } = req.body;
+  
+  try {
+    const session = await validateSession(sessionId);
+    if (session) {
+      res.json({
+        valid: true,
+        user: { id: session.user_id, name: session.name, email: session.email, role: session.role }
+      });
+    } else {
+      res.json({ valid: false });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Logout
+app.post('/api/logout', async (req, res) => {
+  const { sessionId } = req.body;
+  
+  try {
+    if (sessionId) {
+      await expireSession(sessionId);
+    }
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Orders endpoints
-app.get('/api/orders', (req, res) => {
+app.get('/api/orders', requireAdmin, (req, res) => {
   const query = `
     SELECT o.id, o.user_id as userId, o.total_amount as totalAmount, 
            o.original_amount as originalAmount, o.discount, o.status, 
@@ -133,7 +283,7 @@ app.get('/api/orders', (req, res) => {
   });
 });
 
-app.get('/api/orders/user/:userId', (req, res) => {
+app.get('/api/orders/user/:userId', requireAuth, (req, res) => {
   const userId = req.params.userId;
   
   const query = `
@@ -172,7 +322,7 @@ app.get('/api/orders/user/:userId', (req, res) => {
   });
 });
 
-app.put('/api/orders/:id', (req, res) => {
+app.put('/api/orders/:id', requireAdmin, (req, res) => {
   const { status } = req.body;
   db.run(
     'UPDATE orders SET status = ? WHERE id = ?',
@@ -184,7 +334,7 @@ app.put('/api/orders/:id', (req, res) => {
   );
 });
 
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', requireAuth, (req, res) => {
   const { userId, items, totalAmount, originalAmount, discount } = req.body;
   
   db.serialize(() => {
